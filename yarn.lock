@@ -3814,10 +3814,10 @@
     "@openzeppelin/contracts-upgradeable" "5.0.2"
     ethers "^6.9.0"
 
-"@vechain/vechain-kit@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@vechain/vechain-kit/-/vechain-kit-1.2.0.tgz#9dc5ca614a1f1f7e2a1808dcd542579cbbb92488"
-  integrity sha512-2IG/SU2D16Ka79qnRYrv7kT4xVdaF+HKg65/KhNsULtGsc38oJrSGlYYrGpEUtElUrCiaul0ET6lSHUKX6RcIA==
+"@vechain/vechain-kit@1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@vechain/vechain-kit/-/vechain-kit-1.2.2.tgz#05ec520592ae39d6f736713fb7c754ecc743244c"
+  integrity sha512-mFVdGm18SvKqigvOnspvRcXO9dTPjKAuwkjx0bDqQZOj7aSUw7kOf39U1jEPihUPjF8V+WbeqW/AiPob5fcVrQ==
   dependencies:
     "@chakra-ui/react" "^2.8.2"
     "@choc-ui/chakra-autocomplete" "^5.3.0"
@@ -5330,6 +5330,7 @@ buffer-from@^1.0.0:
   integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
 
 "buffer-polyfill@npm:buffer@^6.0.3", buffer@6.0.3, buffer@^6.0.1, buffer@^6.0.3:
+  name buffer-polyfill
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/buffer/-/buffer-6.0.3.tgz#2ace578459cc8fbe2a70aaa8f52ee63b6a74c6c6"
   integrity sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==
