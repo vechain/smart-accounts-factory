@@ -4,7 +4,9 @@ import { Interface } from "ethers";
 import { useCallback, useMemo } from "react";
 
 // Define a type to infer method names from the function definition
-type MethodName<T> = T extends (nameOrSignature: infer U) => any ? U : never;
+type MethodName<T> = T extends (nameOrSignature: infer U) => unknown
+  ? U
+  : never;
 
 /**
  * Parameters for the useCall hook.
@@ -18,7 +20,7 @@ export type UseCallParams<T extends Interface> = {
   enabled?: boolean; // Whether the query should be enabled
   mapResponse?: (
     _res: Connex.VM.Output & Connex.Thor.Account.WithDecoded
-  ) => any; // Optional functon to map the response
+  ) => unknown; // Optional functon to map the response
 };
 
 /**
@@ -87,7 +89,7 @@ export const useCall = <T extends Interface>({
 
 export type GetCallKeyParams = {
   method: string;
-  keyArgs?: any[];
+  keyArgs?: unknown[];
 };
 
 export const getCallKey = ({ method, keyArgs = [] }: GetCallKeyParams) => {
