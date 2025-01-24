@@ -3,6 +3,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  Grid,
   Heading,
   HStack,
   Image,
@@ -42,12 +43,16 @@ export const SupportedProject = () => {
         <Heading size={"md"}>Supported by</Heading>
       </CardHeader>
 
-      <CardBody>
-        <HStack spacing={8}>
+      <CardBody justifyContent={"center"}>
+        <Grid
+          templateColumns={["repeat(3, 1fr)", "repeat(5, 1fr)"]}
+          gap={8}
+          justifyContent={"center"}
+        >
           {projects.map((project) => (
             <SupportedProjectItem key={project.name} {...project} />
           ))}
-        </HStack>
+        </Grid>
       </CardBody>
     </Card>
   );

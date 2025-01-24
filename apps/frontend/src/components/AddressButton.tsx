@@ -65,6 +65,7 @@ export const AddressButton: React.FC<IAddressButton> = ({
       onClick={onClickHandler}
       {...(showAddressIcon && { paddingLeft: 0 })}
       paddingY={0}
+      px={0}
       variant="outline"
       {...otherProps}
     >

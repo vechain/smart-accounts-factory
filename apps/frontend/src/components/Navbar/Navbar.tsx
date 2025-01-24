@@ -23,12 +23,7 @@ export const Navbar = () => {
         </HStack>
 
         <HStack spacing={4}>
-          <WalletButton
-            mobile={useBreakpointValue({
-              base: true,
-              md: false,
-            })}
-          />
+          <WalletButton mobileVariant="icon" />
         </HStack>
       </HStack>
     </Stack>

@@ -37,7 +37,7 @@ export const ContractInfo = ({
         <VStack spacing={4}>
           <HStack w="full" justify={"space-between"}>
             <Text fontSize="md" wordBreak={"break-word"} fontWeight={600}>
-              Contract Factory Address
+              Factory
             </Text>
             <AddressButtonGhostVariant address={address} />
           </HStack>
