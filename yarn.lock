@@ -3814,7 +3814,7 @@
     "@openzeppelin/contracts-upgradeable" "5.0.2"
     ethers "^6.9.0"
 
-"@vechain/vechain-kit@*":
+"@vechain/vechain-kit@1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@vechain/vechain-kit/-/vechain-kit-1.2.0.tgz#9dc5ca614a1f1f7e2a1808dcd542579cbbb92488"
   integrity sha512-2IG/SU2D16Ka79qnRYrv7kT4xVdaF+HKg65/KhNsULtGsc38oJrSGlYYrGpEUtElUrCiaul0ET6lSHUKX6RcIA==

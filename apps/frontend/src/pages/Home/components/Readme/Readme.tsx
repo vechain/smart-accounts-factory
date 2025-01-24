@@ -104,9 +104,10 @@ export const Readme = () => {
             </List>
           </Text>
 
-          <Text fontWeight={"bold"}>
+          <Text>
             You can look at the code of the contracts in the{" "}
             <Link
+              fontWeight={"bold"}
               isExternal
               href="https://github.com/vechain/smart-accounts-factory/tree/main/packages/contracts/contracts"
             >
