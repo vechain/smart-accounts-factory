@@ -1,10 +1,4 @@
-import {
-  HStack,
-  Heading,
-  Image,
-  Stack,
-  useBreakpointValue,
-} from "@chakra-ui/react";
+import { HStack, Heading, Image, Stack } from "@chakra-ui/react";
 import { WalletButton } from "@vechain/vechain-kit";
 import logo from "../../assets/logo.png";
 
