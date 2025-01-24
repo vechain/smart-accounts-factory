@@ -24,6 +24,16 @@ export const SupportedProject = () => {
     { href: "https://cleanify.vet", logo: CleanifyLogo, name: "Cleanify" },
     { href: "https://mugshot.vet", logo: MugshotLogo, name: "Mugshot" },
     { href: "https://evearn.io", logo: EVEarnLogo, name: "EVEarn" },
+    {
+      href: "https://greencart.ai",
+      logo: "https://play-lh.googleusercontent.com/SezsjuPjwTJoM5XDRhVu6Hhzb2VGdNQuQ43SmBv2lsRuzxJWZnanvDvY4b3l3HTGJ1U=w240-h480-rw",
+      name: "GreenCart",
+    },
+    {
+      href: "https://www.vechain.org",
+      logo: "https://imagedelivery.net/oHBRUd2clqykxgDWmeAyLg/661dd77c-2f9d-40e7-baa1-f4e24fd7bf00/icon",
+      name: "VeChain",
+    },
   ];
 
   return (

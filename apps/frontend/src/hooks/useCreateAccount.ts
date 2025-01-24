@@ -6,7 +6,7 @@ import { buildClause } from "../utils/buildClause";
 import { getAccountCreatedEventsQueryKey } from "./useAccountCreatedEvents";
 import { EnvConfig } from "@repo/config/contracts";
 import { getAccountAddressQueryKey } from "./useGetAccountAddress";
-import { useWallet } from "@vechain/dapp-kit-react";
+import { useWallet } from "@vechain/vechain-kit";
 import { getIsAccountDeployedQueryKey } from "./useIsAccountDeployed";
 
 const SimpleAccountFactoryInterface =
@@ -20,7 +20,7 @@ type useCreateAccountParams = {
 };
 
 export const useCreateAccount = ({ onSuccess }: Props) => {
-  const { account } = useWallet();
+  const { connectedWallet } = useWallet();
 
   const clauseBuilder = useCallback(
     ({ owner, env }: useCreateAccountParams) => {
@@ -41,12 +41,12 @@ export const useCreateAccount = ({ onSuccess }: Props) => {
     () => [
       getAccountCreatedEventsQueryKey("testnet"),
       getAccountCreatedEventsQueryKey("mainnet"),
-      getAccountAddressQueryKey(account ?? "", "testnet"),
-      getAccountAddressQueryKey(account ?? "", "mainnet"),
-      getIsAccountDeployedQueryKey(account ?? "", "testnet"),
-      getIsAccountDeployedQueryKey(account ?? "", "mainnet"),
+      getAccountAddressQueryKey(connectedWallet?.address ?? "", "testnet"),
+      getAccountAddressQueryKey(connectedWallet?.address ?? "", "mainnet"),
+      getIsAccountDeployedQueryKey(connectedWallet?.address ?? "", "testnet"),
+      getIsAccountDeployedQueryKey(connectedWallet?.address ?? "", "mainnet"),
     ],
-    [account]
+    [connectedWallet?.address]
   );
 
   return useBuildTransaction({

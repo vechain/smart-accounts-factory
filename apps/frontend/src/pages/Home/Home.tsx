@@ -1,4 +1,11 @@
-import { Grid, VStack } from "@chakra-ui/react";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Grid,
+  Heading,
+  VStack,
+} from "@chakra-ui/react";
 import { ContractInfo } from "./components/ContractInfo";
 import { getConfig } from "@repo/config";
 import { AbstractedAccounts } from "./components/AbstractedAccounts/AbstractedAccounts";
@@ -8,20 +15,27 @@ import { SupportedProject } from "../../components";
 export const Home = () => {
   return (
     <VStack align="stretch" gap={4}>
-      <Grid templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)"]} gap={6}>
-        <ContractInfo
-          title="Mainnet"
-          address={getConfig("mainnet").simpleAccountFactoryContractAddress}
-          env="mainnet"
-        />
-        <ContractInfo
-          title="Testnet"
-          address={getConfig("testnet").simpleAccountFactoryContractAddress}
-          env="testnet"
-        />
-      </Grid>
-
       <AbstractedAccounts />
+
+      <Card>
+        <CardHeader>
+          <Heading size={"sm"}>Stats</Heading>
+        </CardHeader>
+        <CardBody>
+          <Grid templateColumns={["repeat(1, 1fr)", "repeat(2, 1fr)"]} gap={6}>
+            <ContractInfo
+              title="Mainnet"
+              address={getConfig("mainnet").simpleAccountFactoryContractAddress}
+              env="mainnet"
+            />
+            <ContractInfo
+              title="Testnet"
+              address={getConfig("testnet").simpleAccountFactoryContractAddress}
+              env="testnet"
+            />
+          </Grid>
+        </CardBody>
+      </Card>
 
       <SupportedProject />
 

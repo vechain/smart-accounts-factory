@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+
 /**
  * Generates a mock local config file if it does not exist yet
  * This is needed and executed in the dev pipeline to avoid versioning local.ts

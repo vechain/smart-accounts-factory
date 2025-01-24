@@ -2,7 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDotEnv": [".env"],
   "globalDependencies": ["**/.env.*local"],
-  "globalEnv": ["VITE_APP_ENV", "MNEMONIC"],
+  "globalEnv": ["VITE_APP_ENV", "MNEMONIC", "VITE_DELEGATOR_URL"],
   "pipeline": {
     "build": {
       "dependsOn": ["^compile", "@repo/config#check-or-generate-local-config"],

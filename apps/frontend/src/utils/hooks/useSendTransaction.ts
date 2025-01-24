@@ -1,5 +1,5 @@
 import { UseMutateFunction, useMutation } from "@tanstack/react-query";
-import { useConnex } from "@vechain/dapp-kit-react";
+import { useConnex } from "@vechain/vechain-kit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTxReceipt } from "./useTxReceipt";
 

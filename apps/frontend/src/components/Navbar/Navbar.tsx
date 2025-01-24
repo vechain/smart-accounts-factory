@@ -5,7 +5,7 @@ import {
   Stack,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { WalletButton } from "@vechain/dapp-kit-react";
+import { WalletButton } from "@vechain/vechain-kit";
 import logo from "../../assets/logo.png";
 
 export const Navbar = () => {
