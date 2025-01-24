@@ -6,6 +6,8 @@
   <p>Simplified version of the <a href="https://github.com/eth-infinitism/account-abstraction" target="_blank">Account Abstraction pattern<a> for the vechain blockchain.</p>
 </div>
 
+View the online version of the project [here](https://vechain.github.io/smart-accounts-factory/).
+
 There are 2 contracts (that you can find in the `packages/contracts/contracts` folder):
 
 - **SimpleAccount**: Is the abstracted account of the user.
