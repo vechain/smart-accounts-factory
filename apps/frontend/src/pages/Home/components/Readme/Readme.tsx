@@ -9,8 +9,12 @@ import {
   Heading,
   HStack,
   useMediaQuery,
+  Link,
+  Icon,
+  Divider,
 } from "@chakra-ui/react";
 import logo from "../../../../assets/privy-aa-fee.png";
+import { FaExternalLinkAlt } from "react-icons/fa";
 
 export const Readme = () => {
   const [isDesktop] = useMediaQuery("(min-width: 800px)");
@@ -85,6 +89,31 @@ export const Readme = () => {
             Owner of the Simple Account can execute transactions called directly
             from him or authorized via signatures and broadcasted by a third
             party.
+          </Text>
+
+          <Divider />
+          <Text>
+            The contracts are deployed on the following networks:
+            <List spacing={3} styleType="disc">
+              <ListItem>
+                <b>Mainnet</b>: 0xC06Ad8573022e2BE416CA89DA47E8c592971679A
+              </ListItem>
+              <ListItem>
+                <b>Testnet</b>: 0x7EABA81B4F3741Ac381af7e025f3B6e0428F05Fb
+              </ListItem>
+            </List>
+          </Text>
+
+          <Text fontWeight={"bold"}>
+            You can look at the code of the contracts in the{" "}
+            <Link
+              isExternal
+              href="https://github.com/vechain/smart-accounts-factory/tree/main/packages/contracts/contracts"
+            >
+              Smart Accounts Factory
+              <Icon as={FaExternalLinkAlt} />
+            </Link>{" "}
+            repository.
           </Text>
         </VStack>
       </CardBody>
