@@ -119,7 +119,6 @@ contract SimpleAccount is
 
     /**
      * @dev execute a transaction (called directly from owner) authorized via signatures
-     
      * @param to destination address to call
      * @param value the value to pass in this call
      * @param data the calldata to pass in this call
@@ -135,31 +134,57 @@ contract SimpleAccount is
         uint256 validBefore,
         bytes calldata signature
     ) external payable {
-        require(block.timestamp > validAfter, "Authorization not yet valid");
-        require(block.timestamp < validBefore, "Authorization expired");
-
-        /**
-         * verify that the signature did sign the function call
-         */
-        bytes32 structHash = keccak256(
-            abi.encode(
-                keccak256(
-                    "ExecuteWithAuthorization(address to,uint256 value,bytes data,uint256 validAfter,uint256 validBefore)"
-                ),
-                to,
-                value,
-                keccak256(data),
-                validAfter,
-                validBefore
-            )
+        _validateAuthorization(
+            to,
+            value,
+            data,
+            validAfter,
+            validBefore,
+            signature
         );
-        bytes32 digest = _hashTypedDataV4(structHash);
-
-        address recoveredAddress = ECDSA.recover(digest, signature);
-        require(recoveredAddress == owner, "Invalid signer");
-
-        // execute the instruction
         _call(to, value, data);
+    }
+
+    /**
+     * @dev execute multiple transactions (called directly from owner) authorized via signatures
+     * @dev to reduce gas consumption for trivial case (no value), use a zero-length array to mean zero value
+     * @param to an array of destination addresses
+     * @param value an array of values to pass to each call. can be zero-length for no-value calls
+     * @param data an array of calldata to pass to each call
+     * @param validAfter an array of unix timestamps after which the signature will be accepted
+     * @param validBefore an array of unix timestamps until the signature will be accepted
+     * @param signatures an array of signed type4 signatures
+     */
+    function executeBatchWithAuthorization(
+        address[] calldata to,
+        uint256[] calldata value,
+        bytes[] calldata data,
+        uint256[] calldata validAfter,
+        uint256[] calldata validBefore,
+        bytes[] calldata signatures
+    ) external payable {
+        // Check array lengths match
+        require(
+            to.length == value.length &&
+                value.length == data.length &&
+                data.length == validAfter.length &&
+                validAfter.length == validBefore.length &&
+                validBefore.length == signatures.length,
+            "Array lengths mismatch"
+        );
+
+        // Execute each authorized transaction
+        for (uint256 i = 0; i < to.length; i++) {
+            _validateAuthorization(
+                to[i],
+                value[i],
+                data[i],
+                validAfter[i],
+                validBefore[i],
+                signatures[i]
+            );
+            _call(to[i], value[i], data[i]);
+        }
     }
 
     /**
@@ -198,6 +223,38 @@ contract SimpleAccount is
     function transferOwnership(address newOwner) public onlyOwner {
         _requireFromOwner();
         owner = newOwner;
+    }
+
+    /**
+     * @dev Validate a single authorization
+     */
+    function _validateAuthorization(
+        address to,
+        uint256 value,
+        bytes calldata data,
+        uint256 validAfter,
+        uint256 validBefore,
+        bytes calldata signature
+    ) internal view {
+        require(block.timestamp > validAfter, "Authorization not yet valid");
+        require(block.timestamp < validBefore, "Authorization expired");
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                keccak256(
+                    "ExecuteWithAuthorization(address to,uint256 value,bytes data,uint256 validAfter,uint256 validBefore)"
+                ),
+                to,
+                value,
+                keccak256(data),
+                validAfter,
+                validBefore
+            )
+        );
+        bytes32 digest = _hashTypedDataV4(structHash);
+
+        address recoveredAddress = ECDSA.recover(digest, signature);
+        require(recoveredAddress == owner, "Invalid signer");
     }
 
     // ---------- Internal ---------- //
@@ -240,7 +297,7 @@ contract SimpleAccount is
      * @return the version of the account
      */
     function version() public pure returns (string memory) {
-        return "2";
+        return "3";
     }
 
     // ---------- Fallback ---------- //
