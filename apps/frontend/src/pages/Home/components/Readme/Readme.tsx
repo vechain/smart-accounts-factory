@@ -1,5 +1,4 @@
 import {
-  Image,
   Text,
   VStack,
   List,
@@ -7,37 +6,27 @@ import {
   Card,
   CardBody,
   Heading,
-  HStack,
   useMediaQuery,
   Link,
   Icon,
   Divider,
 } from "@chakra-ui/react";
-import logo from "../../../../assets/privy-aa-fee.png";
 import { FaExternalLinkAlt } from "react-icons/fa";
 
 export const Readme = () => {
   const [isDesktop] = useMediaQuery("(min-width: 800px)");
   return (
-    <Card w={"full"}>
+    <Card w={"full"} variant={"outline"}>
       <CardBody>
         <VStack align="stretch" gap={4} px={isDesktop ? 20 : 4} spacing={4}>
           <VStack align="center" spacing={4}>
             <Heading size={"lg"} mt={4}>
-              Readme
+              Tech
             </Heading>
-            <Image
-              mt={8}
-              src={logo}
-              alt="logo"
-              w={"full"}
-              // h="400px"
-              rounded="full"
-            />
             {/* <Text mt={4}>Account Abstraction for the vechain ecosystem.</Text> */}
           </VStack>
 
-          <HStack justify="space-between">
+          {/* <HStack justify="space-between">
             <div
               style={{
                 position: "relative",
@@ -63,9 +52,8 @@ export const Readme = () => {
                 }}
               ></iframe>
             </div>
-          </HStack>
+          </HStack> */}
 
-          <Heading size={"md"}>Tech</Heading>
           <Text>There are 2 contracts:</Text>
 
           <List spacing={3} styleType="disc">
@@ -115,6 +103,17 @@ export const Readme = () => {
               <Icon as={FaExternalLinkAlt} />
             </Link>{" "}
             repository.
+          </Text>
+          <Text>
+            Implement the Smart Account in your app with{" "}
+            <Link
+              fontWeight={"bold"}
+              isExternal
+              href="https://github.com/vechain/vechain-kit"
+            >
+              VeChain Kit
+              <Icon as={FaExternalLinkAlt} />
+            </Link>
           </Text>
         </VStack>
       </CardBody>

@@ -17,7 +17,7 @@ export const Home = () => {
     <VStack align="stretch" gap={4}>
       <AbstractedAccounts />
 
-      <Card>
+      <Card variant={"outline"}>
         <CardHeader>
           <Heading size={"sm"}>Stats</Heading>
         </CardHeader>

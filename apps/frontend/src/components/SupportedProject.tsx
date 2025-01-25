@@ -37,7 +37,7 @@ export const SupportedProject = () => {
   ];
 
   return (
-    <Card justifyContent={"center"} alignItems={"center"}>
+    <Card justifyContent={"center"} alignItems={"center"} variant={"outline"}>
       <CardHeader>
         <Heading size={"md"}>Supported by</Heading>
       </CardHeader>

@@ -23,7 +23,7 @@ export const AbstractedAccounts = () => {
   );
 
   return (
-    <Card>
+    <Card variant={"outline"}>
       <CardHeader>
         <Heading size={"sm"}>Your smart accounts</Heading>
         <Text fontSize="sm" mt={2}>
