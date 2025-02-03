@@ -3565,10 +3565,10 @@
     randombytes "^2.1.0"
     thor-devkit "^2.0.5"
 
-"@vechain/dapp-kit-react@1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@vechain/dapp-kit-react/-/dapp-kit-react-1.4.1.tgz#9ceb4af0c02e962f6e9ed09afb7b7636bc6a0d71"
-  integrity sha512-yvKm2iuoRQTyjh7kCZEJzAJlLaojPN+IYbC1ye9ECEnCMpw7pu9/v9lQnwulMHtWDMTlwRIFpl+9CiFeHWkL/w==
+"@vechain/dapp-kit-react@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@vechain/dapp-kit-react/-/dapp-kit-react-1.5.0.tgz#27a24e432e8640bf9a25e757f9cfddaf1e555b89"
+  integrity sha512-QAja+2z276R4GoIjvQcTwapmaBUIGXeYwUX3zKRs98P36sp64hqja2E6eXS+GEuRLkmK2CEsCjDNb/4aWp6rpA==
   dependencies:
     "@lit/react" "^1.0.1"
     "@vechain/connex" "2.1.0"
@@ -3814,10 +3814,10 @@
     "@openzeppelin/contracts-upgradeable" "5.0.2"
     ethers "^6.9.0"
 
-"@vechain/vechain-kit@1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@vechain/vechain-kit/-/vechain-kit-1.2.4.tgz#18c0dd37cea085ea4bc6f34587e4aeddae4087ef"
-  integrity sha512-ItNUvMeS6yJ4GU8FHmyFyFBedtj8ZAhc1DAYi/M815FHr5sS9JIeyvNyw7+BL4EhHFzRiD05ckF8e6pYk9t2kg==
+"@vechain/vechain-kit@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@vechain/vechain-kit/-/vechain-kit-1.3.0.tgz#8f6860e8e353a28db111cd743c05b00ce8a13f04"
+  integrity sha512-4H/HDRD2oprVbG/aTS5M7QZslbQpZ3HKZ6xSaNPzNixVp9iOM7oxp7rwkCbjRUgc44A6bFP5ZNxqBDxJqVoddA==
   dependencies:
     "@chakra-ui/react" "^2.8.2"
     "@choc-ui/chakra-autocomplete" "^5.3.0"
@@ -3826,13 +3826,14 @@
     "@rainbow-me/rainbowkit" "^2.1.5"
     "@tanstack/react-query" "^5.64.2"
     "@tanstack/react-query-devtools" "^5.64.1"
-    "@vechain/dapp-kit-react" "1.4.1"
+    "@vechain/dapp-kit-react" "1.5.0"
     "@vechain/picasso" "^2.1.1"
     "@vechain/sdk-core" "^1.0.0-rc.5"
     "@vechain/sdk-network" "^1.0.0-rc.5"
     "@vechain/vebetterdao-contracts" "^4.1.0"
     "@wagmi/core" "^2.13.4"
     bignumber.js "^9.1.2"
+    browser-image-compression "^2.0.2"
     buffer "^6.0.3"
     crypto-browserify "^3.12.0"
     dotenv "^16.4.7"
@@ -5205,6 +5206,13 @@ brorand@^1.0.1, brorand@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/brorand/-/brorand-1.1.0.tgz#12c25efe40a45e3c323eb8675a0a0ce57b22371f"
   integrity sha512-cKV8tMCEpQs4hK/ik71d6LrPOnpkpGBR0wzxqr68g2m/LB2GxVYQroAjMJZRVM1Y4BCjCKc3vAamxSzOY2RP+w==
+
+browser-image-compression@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/browser-image-compression/-/browser-image-compression-2.0.2.tgz#4d5ef8882e9e471d6d923715ceb9034499d14eaa"
+  integrity sha512-pBLlQyUf6yB8SmmngrcOw3EoS4RpQ1BcylI3T9Yqn7+4nrQTXJD4sJDe5ODnJdrvNMaio5OicFo75rDyJD2Ucw==
+  dependencies:
+    uzip "0.20201231.0"
 
 browser-readablestream-to-it@^1.0.0, browser-readablestream-to-it@^1.0.1, browser-readablestream-to-it@^1.0.2, browser-readablestream-to-it@^1.0.3:
   version "1.0.3"
@@ -13549,6 +13557,11 @@ uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
+
+uzip@0.20201231.0:
+  version "0.20201231.0"
+  resolved "https://registry.yarnpkg.com/uzip/-/uzip-0.20201231.0.tgz#9e64b065b9a8ebf26eb7583fe8e77e1d9a15ed14"
+  integrity sha512-OZeJfZP+R0z9D6TmBgLq2LHzSSptGMGDGigGiEe0pr8UBe/7fdflgHlHBNDASTXB5jnFuxHpNaJywSg8YFeGng==
 
 v8-compile-cache-lib@^3.0.1:
   version "3.0.1"
