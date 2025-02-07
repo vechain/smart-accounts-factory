@@ -22,7 +22,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             allowedWallets: ["veworld", "sync2"],
           }}
           loginModalUI={{
-            variant: "vechain-wallet-ecosystem",
             description:
               "Choose between social login through VeChain or by connecting your wallet.",
           }}
