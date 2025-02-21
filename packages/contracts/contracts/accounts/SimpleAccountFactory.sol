@@ -23,9 +23,11 @@ import "./SimpleAccount.sol";
  * - Deploy v3 of SimpleAccount implementation (with reinitialization).
  * - Added accountImplementationVersion() method to know current version of the account implementation.
  * - Added upgradeAccount() method to upgrade an account to the latest implementation.
+ * - Added event ContractReinitialized(uint256 version) to reinitialization of the factory.
  */
 contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
     event AccountCreated(SimpleAccount account, address owner, uint256 salt);
+    event ContractReinitialized(uint256 version);
 
     SimpleAccount public accountImplementation;
 
@@ -45,9 +47,10 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
         accountImplementation = new SimpleAccount();
     }
 
-    function initializeV3() public reinitializer(3) {
-        // we update the implementation to the v3 of the SimpleAccount
-        accountImplementation = new SimpleAccount();
+    function initializeV3(address newImplementation) public reinitializer(3) {
+        // Instead of deploying a new implementation, use the provided one, to avoid out of gas errors
+        accountImplementation = SimpleAccount(payable(newImplementation));
+        emit ContractReinitialized(3);
     }
 
     // ---------- Authorizers ---------- //
@@ -190,10 +193,5 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
         returns (string memory)
     {
         return SimpleAccount(payable(address(accountImplementation))).version();
-    }
-
-    /// @notice Returns the address of the latest account implementation
-    function getLatestImplementation() public view returns (address) {
-        return address(accountImplementation);
     }
 }
