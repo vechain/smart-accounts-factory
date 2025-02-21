@@ -8,12 +8,11 @@ export async function deployAll(config: ContractsConfig): Promise<{
 }> {
   const [deployer, owner] = await ethers.getSigners();
 
-  //TODO: add (${networkConfig.network.defaultNodeUrl})
   console.log(
     `Deploying on ${network.name}  with account ${deployer.address}...`
   );
 
-  // Deploy the implementation contract
+  // Deploy the v1 implementation contract
   const Contract = await ethers.getContractFactory("SimpleAccountFactory");
   const implementation = await Contract.deploy();
   await implementation.waitForDeployment();

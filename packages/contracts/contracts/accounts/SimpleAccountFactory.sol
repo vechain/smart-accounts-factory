@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/utils/Create2.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-
 import "./SimpleAccount.sol";
 
 /**
@@ -18,6 +17,12 @@ import "./SimpleAccount.sol";
  * - Added createAccountWithSalt and getAccountAddressWithSalt methods to allow for multiple accounts per owner.
  * - Added version() method to allow for versioning.
  * - Use new SimpleAccount implementation.
+ * WARNING: when we upgraded this version we did not reinitialize the factory, so the account implementation is still v1
+ *
+ * ---------- Version 3 ----------
+ * - Deploy v3 of SimpleAccount implementation (with reinitialization).
+ * - Added accountImplementationVersion() method to know current version of the account implementation.
+ * - Added upgradeAccount() method to upgrade an account to the latest implementation.
  */
 contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
     event AccountCreated(SimpleAccount account, address owner, uint256 salt);
@@ -37,6 +42,11 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
+        accountImplementation = new SimpleAccount();
+    }
+
+    function initializeV3() public reinitializer(3) {
+        // we update the implementation to the v3 of the SimpleAccount
         accountImplementation = new SimpleAccount();
     }
 
@@ -82,26 +92,6 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
     }
 
     /**
-     * @dev Calculate the counterfactual address of this account as it would be returned by createAccount()
-     */
-    function getAccountAddress(address owner) public view returns (address) {
-        uint256 salt = uint256(uint160(owner));
-        return
-            Create2.computeAddress(
-                bytes32(salt),
-                keccak256(
-                    abi.encodePacked(
-                        type(ERC1967Proxy).creationCode,
-                        abi.encode(
-                            address(accountImplementation),
-                            abi.encodeCall(SimpleAccount.initialize, (owner))
-                        )
-                    )
-                )
-            );
-    }
-
-    /**
      * @dev Create an account, and return its address.
      * Returns the address even if the account is already deployed.
      * Note that during UserOperation execution, this method is called only if the account is not deployed.
@@ -129,6 +119,40 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
         );
     }
 
+    /// @notice Helper function to upgrade an account to the latest implementation
+    /// @param account The address of the account to upgrade
+    /// @dev It will fail if the caller is not the owner (check is done in the account implementation)
+    /// @dev For smart accounts where the owner interacts through signatures, this function will fail
+    function upgradeAccount(address account) external {
+        // Only the account owner can upgrade their account
+        SimpleAccount accountContract = SimpleAccount(payable(account));
+
+        // Upgrade to the latest implementation
+        accountContract.upgradeToAndCall(address(accountImplementation), "");
+    }
+
+    // ---------- Getters ---------- //
+
+    /**
+     * @dev Calculate the counterfactual address of this account as it would be returned by createAccount()
+     */
+    function getAccountAddress(address owner) public view returns (address) {
+        uint256 salt = uint256(uint160(owner));
+        return
+            Create2.computeAddress(
+                bytes32(salt),
+                keccak256(
+                    abi.encodePacked(
+                        type(ERC1967Proxy).creationCode,
+                        abi.encode(
+                            address(accountImplementation),
+                            abi.encodeCall(SimpleAccount.initialize, (owner))
+                        )
+                    )
+                )
+            );
+    }
+
     /**
      * @dev Calculate the counterfactual address of this account as it would be returned by createAccountWithSalt()
      */
@@ -151,13 +175,25 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
             );
     }
 
-    // ---------- Getters ---------- //
-
     /**
      * @dev Get the version of the factory
      * @return the version of the factory
      */
     function version() public pure returns (string memory) {
-        return "2";
+        return "3";
+    }
+
+    /// @notice Returns the current version of the account implementation
+    function accountImplementationVersion()
+        public
+        view
+        returns (string memory)
+    {
+        return SimpleAccount(payable(address(accountImplementation))).version();
+    }
+
+    /// @notice Returns the address of the latest account implementation
+    function getLatestImplementation() public view returns (address) {
+        return address(accountImplementation);
     }
 }

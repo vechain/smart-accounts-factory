@@ -23,6 +23,9 @@ import "../core/UserOperationLib.sol";
  * ---------- Version 2 ----------
  * - Added version() method to allow for versioning.
  * - Added transferOwnership method to allow for ownership transfer of the smart account.
+ *
+ * ---------- Version 3 ----------
+ * - Added execute multiple transactions with authorization, to sign all clauses at once.
  */
 contract SimpleAccount is
     Initializable,
