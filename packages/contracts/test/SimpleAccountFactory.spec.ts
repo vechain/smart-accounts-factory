@@ -267,8 +267,4 @@ describe("SimpleAccountFactory", () => {
       expect(version).to.not.equal("0x");
     });
   });
-
-  describe("SimpleAccount upgrade", () => {
-    it.skip("Can upgrade the account through the factory", async () => {});
-  });
 });
