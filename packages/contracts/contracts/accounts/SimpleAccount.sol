@@ -13,6 +13,7 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable
 import "../core/Helpers.sol";
 import "./callback/TokenCallbackHandler.sol";
 import "../core/UserOperationLib.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title Minimal smart account.
@@ -76,6 +77,7 @@ contract SimpleAccount is
 
     /**
      * @dev Internal function to check if the caller is the owner
+     * @dev This can be used when we want to allow both direct calls from the owner, and calls from the account or smart contract (using signatures)
      */
     function _onlyOwner() internal view {
         //directly from EOA owner, or through the account itself (which gets redirected through execute())
@@ -87,6 +89,7 @@ contract SimpleAccount is
 
     /**
      * @dev Require the function call went through owner
+     * @dev It will fail if it is not directly called by the owner (eg: called by another contract, or by providing a signature)
      */
     function _requireFromOwner() internal view {
         require(msg.sender == owner, "account: not Owner or EntryPoint");
@@ -150,13 +153,12 @@ contract SimpleAccount is
 
     /**
      * @dev execute multiple transactions (called directly from owner) authorized via signatures
-     * @dev to reduce gas consumption for trivial case (no value), use a zero-length array to mean zero value
      * @param to an array of destination addresses
-     * @param value an array of values to pass to each call. can be zero-length for no-value calls
+     * @param value an array of values to pass to each call
      * @param data an array of calldata to pass to each call
      * @param validAfter an array of unix timestamps after which the signature will be accepted
      * @param validBefore an array of unix timestamps until the signature will be accepted
-     * @param signatures an array of signed type4 signatures
+     * @param signature the signed type4 signature for the entire batch
      */
     function executeBatchWithAuthorization(
         address[] calldata to,
@@ -164,30 +166,92 @@ contract SimpleAccount is
         bytes[] calldata data,
         uint256[] calldata validAfter,
         uint256[] calldata validBefore,
-        bytes[] calldata signatures
+        bytes calldata signature
     ) external payable {
         // Check array lengths match
         require(
             to.length == value.length &&
                 value.length == data.length &&
                 data.length == validAfter.length &&
-                validAfter.length == validBefore.length &&
-                validBefore.length == signatures.length,
+                validAfter.length == validBefore.length,
             "Array lengths mismatch"
         );
 
-        // Execute each authorized transaction
-        for (uint256 i = 0; i < to.length; i++) {
-            _validateAuthorization(
-                to[i],
-                value[i],
-                data[i],
-                validAfter[i],
-                validBefore[i],
-                signatures[i]
+        // Check time validity for all transactions
+        for (uint256 i = 0; i < validAfter.length; i++) {
+            require(
+                block.timestamp > validAfter[i],
+                "Authorization not yet valid"
             );
+            require(block.timestamp < validBefore[i], "Authorization expired");
+        }
+
+        // Validate batch authorization
+        _validateBatchAuthorization(
+            to,
+            value,
+            data,
+            validAfter,
+            validBefore,
+            signature
+        );
+
+        // Execute each transaction
+        for (uint256 i = 0; i < to.length; i++) {
             _call(to[i], value[i], data[i]);
         }
+    }
+
+    /**
+     * @dev Validate a batch authorization
+     * @notice The array encoding follows EIP-712 standard for arrays:
+     * - For dynamic types (like bytes[]), each element is hashed individually first
+     * - Arrays are encoded by first encoding their elements, then hashing the concatenation
+     * This matches how ethers.js implements array encoding in signTypedData
+     * See: https://eips.ethereum.org/EIPS/eip-712#definition-of-encodedata
+     */
+    function _validateBatchAuthorization(
+        address[] calldata to,
+        uint256[] calldata value,
+        bytes[] calldata data,
+        uint256[] calldata validAfter,
+        uint256[] calldata validBefore,
+        bytes calldata signature
+    ) internal view {
+        bytes32 typeHash = keccak256(
+            "ExecuteBatchWithAuthorization(address[] to,uint256[] value,bytes[] data,uint256[] validAfter,uint256[] validBefore)"
+        );
+
+        // Hash arrays according to EIP-712 array encoding rules
+        bytes32[] memory dataHashes = new bytes32[](data.length);
+        for (uint256 i = 0; i < data.length; i++) {
+            dataHashes[i] = keccak256(data[i]);
+        }
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                typeHash,
+                keccak256(abi.encodePacked(to)),
+                keccak256(abi.encodePacked(value)),
+                keccak256(abi.encodePacked(dataHashes)),
+                keccak256(abi.encodePacked(validAfter)),
+                keccak256(abi.encodePacked(validBefore))
+            )
+        );
+        bytes32 digest = _hashTypedDataV4(structHash);
+
+        address recoveredAddress = ECDSA.recover(digest, signature);
+        require(
+            recoveredAddress == owner,
+            string(
+                abi.encodePacked(
+                    "Invalid signer. Expected: ",
+                    Strings.toHexString(owner),
+                    " Got: ",
+                    Strings.toHexString(recoveredAddress)
+                )
+            )
+        );
     }
 
     /**
@@ -224,7 +288,6 @@ contract SimpleAccount is
      * @param newOwner the new owner of the account
      */
     function transferOwnership(address newOwner) public onlyOwner {
-        _requireFromOwner();
         owner = newOwner;
     }
 
