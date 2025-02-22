@@ -2,6 +2,13 @@ import { expect } from "chai";
 import { getOrDeployContracts } from "./helpers/deploy";
 import { ethers } from "hardhat";
 import { getImplementationAddress } from "@openzeppelin/upgrades-core";
+import { deployProxy, upgradeProxy } from "../scripts/helpers/";
+import {
+  SimpleAccount,
+  SimpleAccountFactory,
+  SimpleAccountFactoryV1,
+  SimpleAccountFactoryV2,
+} from "../typechain-types";
 
 describe("SimpleAccountFactory", () => {
   describe("Deployment", () => {
@@ -110,7 +117,150 @@ describe("SimpleAccountFactory", () => {
       ).to.be.reverted;
     });
 
-    it.skip("can successfully upgrade to v3 (storage should be preserved and SimpleAccount should be updated)", async () => {});
+    it("can successfully upgrade to v3 (storage should be preserved and SimpleAccount should be updated)", async () => {
+      const [deployer, ...otherAccounts] = await ethers.getSigners();
+
+      // Deploy V1 factory
+      const simpleAccountFactory = (await deployProxy(
+        "SimpleAccountFactoryV1",
+        [] // initialize with no args
+      )) as SimpleAccountFactoryV1;
+
+      // Create first account (V1)
+      const owner1 = otherAccounts[0];
+      await simpleAccountFactory.createAccount(await owner1.getAddress());
+      const account1Address = await simpleAccountFactory.getAccountAddress(
+        await owner1.getAddress()
+      );
+      const account1 = (await ethers.getContractAt(
+        "SimpleAccount",
+        account1Address
+      )) as SimpleAccount;
+      // should be reverted because version was not available in V1
+      await expect(account1.version()).to.be.reverted;
+
+      // Upgrade factory to V2
+      const simpleAccountFactoryV2 = (await upgradeProxy(
+        "SimpleAccountFactoryV1",
+        "SimpleAccountFactoryV2",
+        await simpleAccountFactory.getAddress(),
+        [] // no initialization needed for V2
+      )) as SimpleAccountFactoryV2;
+      expect(await simpleAccountFactoryV2.version()).to.equal("2");
+
+      // Create second account (should still be V1)
+      const owner2 = otherAccounts[1];
+      await simpleAccountFactoryV2.createAccount(await owner2.getAddress());
+      const account2Address = await simpleAccountFactoryV2.getAccountAddress(
+        await owner2.getAddress()
+      );
+      const account2 = (await ethers.getContractAt(
+        "SimpleAccount",
+        account2Address
+      )) as SimpleAccount;
+      // should be reverted because version was not available in V1
+      await expect(account2.version()).to.be.reverted;
+
+      // Upgrade factory to V3
+      const SmartAccountV3 = await ethers.getContractFactory("SimpleAccount");
+      const smartAccountV3 = await SmartAccountV3.deploy();
+      await smartAccountV3.waitForDeployment();
+
+      const simpleAccountFactoryV3 = (await upgradeProxy(
+        "SimpleAccountFactoryV2",
+        "SimpleAccountFactory",
+        await simpleAccountFactoryV2.getAddress(),
+        [await smartAccountV3.getAddress()], // V3 initialization args
+        { version: 3 } // specify V3 initialization
+      )) as SimpleAccountFactory;
+      expect(await simpleAccountFactoryV3.version()).to.equal("3");
+
+      const latestAccountImplementation =
+        await simpleAccountFactoryV3.accountImplementation();
+      expect(latestAccountImplementation).to.equal(
+        await smartAccountV3.getAddress()
+      );
+      expect(
+        await simpleAccountFactoryV3.accountImplementationVersion()
+      ).to.equal("3");
+
+      // Create third account (should be V3)
+      const owner3 = otherAccounts[2];
+      await simpleAccountFactoryV3.createAccount(await owner3.getAddress());
+      const account3Address = await simpleAccountFactoryV3.getAccountAddress(
+        await owner3.getAddress()
+      );
+      const account3 = (await ethers.getContractAt(
+        "SimpleAccount",
+        account3Address
+      )) as SimpleAccount;
+      expect(await account3.version()).to.equal("3");
+
+      // Upgrade account1 to V3 using signature
+      const chainId = await ethers.provider.getNetwork().then((n) => n.chainId);
+      const upgradeData = account1.interface.encodeFunctionData(
+        "upgradeToAndCall",
+        [latestAccountImplementation, "0x"]
+      );
+
+      const domain = {
+        name: "Wallet",
+        version: "1",
+        chainId: Number(chainId),
+        verifyingContract: account1Address,
+      };
+
+      const types = {
+        ExecuteWithAuthorization: [
+          { name: "to", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "data", type: "bytes" },
+          { name: "validAfter", type: "uint256" },
+          { name: "validBefore", type: "uint256" },
+        ],
+      };
+
+      // Upgrade first account
+      const message1 = {
+        to: account1Address,
+        value: ethers.parseEther("0"),
+        data: upgradeData,
+        validAfter: 0,
+        validBefore: Math.floor(Date.now() / 1000) + 60,
+      };
+
+      const signature1 = await owner1.signTypedData(domain, types, message1);
+      await account1.executeWithAuthorization(
+        message1.to,
+        message1.value,
+        message1.data,
+        message1.validAfter,
+        message1.validBefore,
+        signature1
+      );
+      expect(await account1.version()).to.equal("3");
+
+      // Upgrade second account similarly
+      domain.verifyingContract = account2Address;
+      const message2 = {
+        to: account2Address,
+        value: ethers.parseEther("0"),
+        data: upgradeData,
+        validAfter: 0,
+        validBefore: Math.floor(Date.now() / 1000) + 60,
+      };
+
+      const signature2 = await owner2.signTypedData(domain, types, message2);
+      await account2.executeWithAuthorization(
+        message2.to,
+        message2.value,
+        message2.data,
+        message2.validAfter,
+        message2.validBefore,
+        signature2
+      );
+      expect(await account2.version()).to.equal("3");
+    });
   });
 
   describe("SimpleAccount creation", () => {
