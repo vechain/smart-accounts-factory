@@ -1,10 +1,13 @@
-import { Interface, Signer } from "ethers";
+import { Signer } from "ethers";
 import { ethers } from "hardhat";
 import { SimpleAccountFactory } from "../../typechain-types";
+import { deployAndUpgrade } from "../../scripts/helpers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 interface DeployedContracts {
   simpleAccountFactory: SimpleAccountFactory;
   deployer: Signer;
+  otherAccounts: HardhatEthersSigner[];
 }
 
 let cachedDeployment: DeployedContracts | undefined = undefined;
@@ -17,54 +20,33 @@ export async function getOrDeployContracts(
     return cachedDeployment;
   }
 
-  const [deployer] = await ethers.getSigners();
+  const [deployer, ...otherAccounts] = await ethers.getSigners();
 
-  // Deploy the implementation contract
-  const Contract = await ethers.getContractFactory("SimpleAccountFactory");
-  const implementation = await Contract.deploy();
-  await implementation.waitForDeployment();
-  let tx = await implementation.deploymentTransaction();
-  let receipt = await ethers.provider.getTransactionReceipt(tx!.hash);
-  const implementationAddress = receipt?.contractAddress;
+  // Deploy the V3 version of SimpleAccount separately because we will need it
+  // when reinitializing the SimpleAccountFactory v3
+  const SimpleAccount = await ethers.getContractFactory("SimpleAccount");
+  const simpleAccountImpl = await SimpleAccount.deploy();
+  await simpleAccountImpl.waitForDeployment();
 
-  if (!implementationAddress) {
-    throw new Error("SimpleAccountFactory deployment failed");
-  }
-
-  // Deploy the proxy contract
-  const proxyFactory = await ethers.getContractFactory("AAProxy");
-  const proxy = await proxyFactory.deploy(
-    implementationAddress,
-    getInitializerData(Contract.interface, [])
-  );
-  await proxy.waitForDeployment();
-  tx = await proxy.deploymentTransaction();
-  receipt = await ethers.provider.getTransactionReceipt(tx!.hash);
-  const proxyAddress = receipt?.contractAddress;
-
-  if (!proxyAddress) {
-    throw new Error("SimpleAccountFactory proxy deployment failed");
-  }
-
-  const simpleAccountFactory = await ethers.getContractAt(
-    "SimpleAccountFactory",
-    proxyAddress
-  );
+  const smartAccountFactory = (await deployAndUpgrade(
+    [
+      "SimpleAccountFactoryV1",
+      "SimpleAccountFactoryV2",
+      "SimpleAccountFactory",
+    ],
+    [[], [], [await simpleAccountImpl.getAddress()]],
+    {
+      versions: [undefined, 2, 3],
+      logOutput: false,
+    }
+  )) as SimpleAccountFactory;
 
   // Cache the deployment
   cachedDeployment = {
-    simpleAccountFactory,
+    simpleAccountFactory: smartAccountFactory,
     deployer,
+    otherAccounts,
   };
 
   return cachedDeployment;
-}
-
-function getInitializerData(contractInterface: Interface, args: any[]) {
-  const initializer = "initialize";
-  const fragment = contractInterface.getFunction(initializer);
-  if (!fragment) {
-    throw new Error(`Contract initializer not found`);
-  }
-  return contractInterface.encodeFunctionData(fragment, args);
 }
