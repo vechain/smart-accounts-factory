@@ -12,7 +12,7 @@ export const upgradeConfig: Record<string, UpgradeContract> = {
     versions: ["v2", "v3"],
     descriptions: {
       v2: "Add transfer ownership of simple account.",
-      v3: "Add butch execution of transactions.",
+      v3: "Add batch execution of transactions.",
     },
   },
 } as const;
