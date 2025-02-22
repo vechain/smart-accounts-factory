@@ -22,7 +22,6 @@ import "./SimpleAccount.sol";
  * ---------- Version 3 ----------
  * - Deploy v3 of SimpleAccount implementation (with reinitialization).
  * - Added accountImplementationVersion() method to know current version of the account implementation.
- * - Added upgradeAccount() method to upgrade an account to the latest implementation.
  * - Added event ContractReinitialized(uint256 version) to reinitialization of the factory.
  */
 contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
@@ -120,18 +119,6 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
                 )
             )
         );
-    }
-
-    /// @notice Helper function to upgrade an account to the latest implementation
-    /// @param account The address of the account to upgrade
-    /// @dev It will fail if the caller is not the owner (check is done in the account implementation)
-    /// @dev For smart accounts where the owner interacts through signatures, this function will fail
-    function upgradeAccount(address account) external {
-        // Only the account owner can upgrade their account
-        SimpleAccount accountContract = SimpleAccount(payable(account));
-
-        // Upgrade to the latest implementation
-        accountContract.upgradeToAndCall(address(accountImplementation), "");
     }
 
     // ---------- Getters ---------- //
