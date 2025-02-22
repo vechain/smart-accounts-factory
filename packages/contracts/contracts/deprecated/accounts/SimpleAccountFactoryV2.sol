@@ -5,7 +5,8 @@ import "@openzeppelin/contracts/utils/Create2.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "./SimpleAccount.sol";
+
+import "./SimpleAccountV1.sol";
 
 /**
  * @title SimpleAccountFactory
@@ -18,17 +19,11 @@ import "./SimpleAccount.sol";
  * - Added version() method to allow for versioning.
  * - Use new SimpleAccount implementation.
  * WARNING: when we upgraded this version we did not reinitialize the factory, so the account implementation is still v1
- *
- * ---------- Version 3 ----------
- * - Deploy v3 of SimpleAccount implementation (with reinitialization).
- * - Added accountImplementationVersion() method to know current version of the account implementation.
- * - Added event ContractReinitialized(uint256 version) to reinitialization of the factory.
  */
-contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
-    event AccountCreated(SimpleAccount account, address owner, uint256 salt);
-    event ContractReinitialized(uint256 version);
+contract SimpleAccountFactoryV2 is UUPSUpgradeable, AccessControlUpgradeable {
+    event AccountCreated(SimpleAccountV1 account, address owner, uint256 salt);
 
-    SimpleAccount public accountImplementation;
+    SimpleAccountV1 public accountImplementation;
 
     // ---------- Initialization ---------- //
 
@@ -43,13 +38,7 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
-        accountImplementation = new SimpleAccount();
-    }
-
-    function initializeV3(address newImplementation) public reinitializer(3) {
-        // Instead of deploying a new implementation, use the provided one, to avoid out of gas errors
-        accountImplementation = SimpleAccount(payable(newImplementation));
-        emit ContractReinitialized(3);
+        accountImplementation = new SimpleAccountV1();
     }
 
     // ---------- Authorizers ---------- //
@@ -73,55 +62,25 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
      * Notice: the salt is calculated internally from the owner address,
      * so the same owner will always get the same address.
      */
-    function createAccount(address owner) public returns (SimpleAccount ret) {
+    function createAccount(address owner) public returns (SimpleAccountV1 ret) {
         uint256 salt = uint256(uint160(owner));
         address addr = getAccountAddress(owner);
         uint256 codeSize = addr.code.length;
         if (codeSize > 0) {
-            return SimpleAccount(payable(addr));
+            return SimpleAccountV1(payable(addr));
         }
 
         emit AccountCreated(ret, owner, salt);
 
-        ret = SimpleAccount(
+        ret = SimpleAccountV1(
             payable(
                 new ERC1967Proxy{salt: bytes32(salt)}(
                     address(accountImplementation),
-                    abi.encodeCall(SimpleAccount.initialize, (owner))
+                    abi.encodeCall(SimpleAccountV1.initialize, (owner))
                 )
             )
         );
     }
-
-    /**
-     * @dev Create an account, and return its address.
-     * Returns the address even if the account is already deployed.
-     * Note that during UserOperation execution, this method is called only if the account is not deployed.
-     * This method returns an existing account address even after account creation
-     */
-    function createAccountWithSalt(
-        address owner,
-        uint256 salt
-    ) public returns (SimpleAccount ret) {
-        address addr = getAccountAddress(owner);
-        uint256 codeSize = addr.code.length;
-        if (codeSize > 0) {
-            return SimpleAccount(payable(addr));
-        }
-
-        emit AccountCreated(ret, owner, salt);
-
-        ret = SimpleAccount(
-            payable(
-                new ERC1967Proxy{salt: bytes32(salt)}(
-                    address(accountImplementation),
-                    abi.encodeCall(SimpleAccount.initialize, (owner))
-                )
-            )
-        );
-    }
-
-    // ---------- Getters ---------- //
 
     /**
      * @dev Calculate the counterfactual address of this account as it would be returned by createAccount()
@@ -136,11 +95,39 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
                         type(ERC1967Proxy).creationCode,
                         abi.encode(
                             address(accountImplementation),
-                            abi.encodeCall(SimpleAccount.initialize, (owner))
+                            abi.encodeCall(SimpleAccountV1.initialize, (owner))
                         )
                     )
                 )
             );
+    }
+
+    /**
+     * @dev Create an account, and return its address.
+     * Returns the address even if the account is already deployed.
+     * Note that during UserOperation execution, this method is called only if the account is not deployed.
+     * This method returns an existing account address even after account creation
+     */
+    function createAccountWithSalt(
+        address owner,
+        uint256 salt
+    ) public returns (SimpleAccountV1 ret) {
+        address addr = getAccountAddress(owner);
+        uint256 codeSize = addr.code.length;
+        if (codeSize > 0) {
+            return SimpleAccountV1(payable(addr));
+        }
+
+        emit AccountCreated(ret, owner, salt);
+
+        ret = SimpleAccountV1(
+            payable(
+                new ERC1967Proxy{salt: bytes32(salt)}(
+                    address(accountImplementation),
+                    abi.encodeCall(SimpleAccountV1.initialize, (owner))
+                )
+            )
+        );
     }
 
     /**
@@ -158,27 +145,20 @@ contract SimpleAccountFactory is UUPSUpgradeable, AccessControlUpgradeable {
                         type(ERC1967Proxy).creationCode,
                         abi.encode(
                             address(accountImplementation),
-                            abi.encodeCall(SimpleAccount.initialize, (owner))
+                            abi.encodeCall(SimpleAccountV1.initialize, (owner))
                         )
                     )
                 )
             );
     }
 
+    // ---------- Getters ---------- //
+
     /**
      * @dev Get the version of the factory
      * @return the version of the factory
      */
     function version() public pure returns (string memory) {
-        return "3";
-    }
-
-    /// @notice Returns the current version of the account implementation
-    function accountImplementationVersion()
-        public
-        view
-        returns (string memory)
-    {
-        return SimpleAccount(payable(address(accountImplementation))).version();
+        return "2";
     }
 }
